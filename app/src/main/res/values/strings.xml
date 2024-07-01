@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Photo Viewer</string>
+    <string name="header_album_title">Котlin`яет</string>
+    <string name="image_text_label_1">Фотографии</string>
+    <string name="album_text_label_1">Альбомы</string>
+    <string name="text_label_2">Избранное</string>
+    <string name="rotate">Повернуть</string>
+</resources>
