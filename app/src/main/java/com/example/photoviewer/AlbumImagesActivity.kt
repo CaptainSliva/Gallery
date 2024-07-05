@@ -42,10 +42,10 @@ class AlbumImagesActivity: Activity() {
         val fotopath = path
         val imageGRV: GridView = findViewById(R.id.idImageView)
         var imageList = ArrayList<GridViewModal>()
-        val languages = listOf("1", "2", "3", "4", "5", "6")
         val images = listOf(
             "$fotopath/IMG_20240608_234836.jpg", "$fotopath/IMG_20240608_143957.jpg", "$fotopath/IMG_20240609_152514.jpg",
-            "$fotopath/IMG_20240610_002927.jpg", "$fotopath/IMG_20240609_234959.jpg", "$fotopath/IMG_20240607_144222.jpg")
+            "$fotopath/IMG_20240610_002927.jpg", "$fotopath/IMG_20240609_234959.jpg", "$fotopath/IMG_20240607_144222.jpg",
+            )
 
 
 
@@ -59,8 +59,8 @@ class AlbumImagesActivity: Activity() {
             }
         }
 
-        for (i in languages.indices) {
-            imageList += GridViewModal(languages[i], bitMap[i])
+        for (i in images.indices) {
+            imageList += GridViewModal(i.toString(), bitMap[i])
         }
 
         // on below line we are initializing our course adapter
