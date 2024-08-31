@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/search_on_comment"
+        android:title="Поиск по комментарию"/>
+    <item
+        android:id="@+id/search_on_date"
+        android:title="Поиск по дате"/>
+    <item
+        android:id="@+id/gigigi"
+        android:title="☻"/>
+</menu>

@@ -4,4 +4,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="violet">#7C4DFF</color>
     <color name="text_background">#A6000000</color>
+    <color name="translucent">#4D000000</color>
+    <color name="translucent1">#4DFFFFFF</color>
 </resources>

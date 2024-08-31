@@ -5,4 +5,24 @@
     <string name="album_text_label_1">Альбомы</string>
     <string name="text_label_2">Избранное</string>
     <string name="rotate">Повернуть</string>
+    <string name="comment">Комментарий</string>
+    <string name="delete">Удалить</string>
+    <string name="share">Поделиться</string>
+
+    <string name="title_album_delete">Удаление альбома</string>
+    <string name="messge_album_delete">Удалить альбом</string>
+    <string name="title_new_album">Добавить альбом</string>
+    <string name="message_new_album">Введите название альбома</string>
+    <string name="title_rename_album">Переименование альбома</string>
+    <string name="message_rename_album">Переименовать альбом</string>
+
+    <string name="choose_action_with_album">Выберите действие:</string>
+    <string name="choose_action_delete_album">Удалить альбом</string>
+    <string name="choose_action_rename_album">Переименовать альбом</string>
+
+    <string name="title_image_delete">Удаление фотографии</string>
+    <string name="messge_image_delete">Удалить фотографию из альбома</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

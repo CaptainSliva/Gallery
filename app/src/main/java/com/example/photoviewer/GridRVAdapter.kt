@@ -2,12 +2,14 @@ package com.example.photoviewer
 
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 
 // on below line we are creating an
@@ -23,7 +25,6 @@ internal class GridRVAdapter(
 BaseAdapter() {
     // in base adapter class we are creating variables
     // for layout inflater, course image view and course text view.
-    private var layoutInflater: LayoutInflater? = null
     private lateinit var courseTV: TextView
     private lateinit var courseIV: ImageView
 
@@ -44,16 +45,15 @@ BaseAdapter() {
 
     // in below function we are getting individual item of grid view.
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
-        var convertView = convertView
-        // on blow line we are checking if layout inflater
-        // is null, if it is null we are initializing it.
-        if (layoutInflater == null) {
+        var convertView: View? = null
+        var layoutInflater: LayoutInflater? = null
+        Log.d("Print", itemModel)
+
+
+        if (convertView == null) {
+            convertView = View(context);
             layoutInflater =
                 context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        }
-        // on the below line we are checking if convert view is null.
-        // If it is null we are initializing it.
-        if (convertView == null) {
             // on below line we are passing the layout file
             // which we have to inflate for each item of grid view.
             if (itemModel == "album") {
@@ -67,6 +67,9 @@ BaseAdapter() {
             }
 
         }
+        else {
+            convertView = convertView. tag as View
+        }
         // on below line we are initializing our course image view
         // and course text view with their ids.
         courseIV = convertView!!.findViewById(R.id.idCardImage)
@@ -79,5 +82,4 @@ BaseAdapter() {
     }
 
 }
-
 

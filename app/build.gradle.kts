@@ -11,8 +11,8 @@ android {
         applicationId = "com.example.photoviewer"
         minSdk = 29
         targetSdk = 34
-        versionCode = 2
-        versionName = "2.1"
+        versionCode = 4
+        versionName = "4.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -46,4 +46,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
+
 }
