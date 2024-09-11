@@ -2,7 +2,6 @@
 package com.example.photoviewer
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
@@ -12,7 +11,6 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.GridLayoutManager
@@ -31,15 +29,24 @@ class AlbumImagesActivity: Activity() {
     val numberOfColumns = 4
     var isLoading = false
     var imagesCount = 0
+    var fileList = ArrayList<String>()
+    var retFromAddImage = false
 
+    lateinit var imageRV: RecyclerView
+    var recyclerDataArrayList = ArrayList<RecyclerData>()
+    val layoutManager = GridLayoutManager(this, numberOfColumns)
+    val adapter = RecyclerViewAdapter(recyclerDataArrayList, this@AlbumImagesActivity)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (pageTransition.isEmpty()) FunctionsApp().initialPageTransition()
+
         bitMap.clear()
         images.clear()
         itemModel = "image"
 
         val intent = intent
         val path = intent.extras!!.getString("albumPath")
+
 
 
         super.onCreate(savedInstanceState)
@@ -52,10 +59,10 @@ class AlbumImagesActivity: Activity() {
 
 
         val newImage: ImageButton = findViewById(R.id.idNewImageBtn)
-        val imageRV: RecyclerView = findViewById(R.id.idImageView)
-        var recyclerDataArrayList = ArrayList<RecyclerData>()
-        val layoutManager = GridLayoutManager(this, numberOfColumns)
-        val adapter = RecyclerViewAdapter(recyclerDataArrayList, this@AlbumImagesActivity)
+        imageRV = findViewById(R.id.idImageView)
+//        var recyclerDataArrayList = ArrayList<RecyclerData>()
+//        val layoutManager = GridLayoutManager(this, numberOfColumns)
+//        val adapter = RecyclerViewAdapter(recyclerDataArrayList, this@AlbumImagesActivity)
 
 //        for (i in 0..10) {
 //            addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, start = ct, stop = ct+4)
@@ -63,7 +70,7 @@ class AlbumImagesActivity: Activity() {
 //        }
         addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, 0, 0)
 
-        
+
 
 //        imageRV.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 //            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -100,7 +107,6 @@ class AlbumImagesActivity: Activity() {
                             applicationContext,
                             FullImageActivity::class.java
                         )
-
                         // passing array index
                         i.putExtra("photoID", position)
                         i.putExtra("photoPath", images[position].toString())
@@ -127,6 +133,35 @@ class AlbumImagesActivity: Activity() {
     override fun onResume() {
         super.onResume()
         itemModel = "image"
+        print("resume")
+        if (retFromAddImage) {
+            val hashes = FunctionsFiles().getHashesPhotosFromAlbum(applicationContext, albumPath)
+            FunctionsFiles().addPhotoToAlbumFile(applicationContext, albumPath, fileList)
+            fileList.forEach { image ->
+                if (FunctionsImages().md5(image) !in hashes) {
+
+
+                    val bmp = FunctionsImages().compressBitmap(
+                        MediaStore.Images.Media.getBitmap(
+                            this@AlbumImagesActivity.contentResolver,
+                            image.toUri()
+                        ), 500
+                    )
+
+                    images.add(0, image.toUri())
+                    recyclerDataArrayList.add(0, RecyclerData("", bmp))
+                    bitMap.add(0, bmp)
+                }
+            }
+            retFromAddImage = false
+            fileList.clear()
+        }
+        if (pageTransition[2]) {
+            recyclerDataArrayList.removeAt(intent.extras!!.getInt("removePosition"))
+        }
+        adapter.notifyDataSetChanged()
+        FunctionsApp().initialPageTransition()
+
     }
 
 //    @Throws(IOException::class)
@@ -196,8 +231,7 @@ class AlbumImagesActivity: Activity() {
                     } catch (e: Exception) {
                         Toast.makeText(this@AlbumImagesActivity, e.toString(), Toast.LENGTH_LONG)
                             .show()
-                        val hash = FunctionsImages().md5(
-                            images[i].toString())
+                        val hash = FunctionsImages().md5(images[i].toString())
                         FunctionsFiles().deleteUnUseImages(applicationContext, albumPath, hash)
                         FunctionsFiles().deleteUnUseStorys(applicationContext, hash)
                     }
@@ -249,8 +283,7 @@ class AlbumImagesActivity: Activity() {
 //        Log.d("PrintAlbum", album.readLines().toString())
         var retAlbum: ArrayList<Uri> = ArrayList()
         album.forEachLine { line ->
-            retAlbum.add(line.split(delimiter)[0].toUri())
-            Log.d("Print", retAlbum.toString())
+            retAlbum.add(line.split(delimiterUriAndHash)[0].toUri())
         }
         return retAlbum
     }
@@ -258,8 +291,6 @@ class AlbumImagesActivity: Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
-
-        var fileList = ArrayList<String>()
 
         if (requestCode == 1) {
 
@@ -282,13 +313,15 @@ class AlbumImagesActivity: Activity() {
             }
         }
         Log.d("PrintNoEmpty", "Is not Empty")
-        FunctionsFiles().addPhotoToAlbumFile(applicationContext, albumPath, fileList)
-        val i = Intent(
-            applicationContext,
-            AlbumImagesActivity::class.java)
-        i.putExtra("albumPath", albumPath)
-        startActivity(i)
-        finish()
+        retFromAddImage = true
+
+
+//        val i = Intent(
+//            applicationContext,
+//            AlbumImagesActivity::class.java)
+//        i.putExtra("albumPath", albumPath)
+//        startActivity(i)
+//        finish()
 
     }
 

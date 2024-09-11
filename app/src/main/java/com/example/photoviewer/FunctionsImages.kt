@@ -10,7 +10,7 @@ import java.security.MessageDigest
 
 class FunctionsImages {
 
-    fun md5(input:String): String {
+    fun md5(input:String): String { // По сути на вход идёт Uri в виде строки
         val md = MessageDigest.getInstance("MD5")
         return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
     }

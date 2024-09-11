@@ -60,6 +60,8 @@ class FunctionsApp: AppCompatActivity() {
         ) { dialog, which -> imageName = imageDeleteName
             FunctionsFiles().deletePhoto(context, albumPath, imageDeleteName)
             recyclerDataArrayList.removeAt(position)
+            images.removeAt(position)
+            bitMap.removeAt(position)
             adapter.notifyDataSetChanged()
         }
 
@@ -89,6 +91,13 @@ class FunctionsApp: AppCompatActivity() {
             "ОТМЕНА"
         ) { dialog, which -> dialog.cancel() }
         builder.show()
+    }
+
+    fun initialPageTransition() {
+        pageTransition.clear()
+        for (i in 0..2) {
+            pageTransition.add(false)
+        }
     }
 
 

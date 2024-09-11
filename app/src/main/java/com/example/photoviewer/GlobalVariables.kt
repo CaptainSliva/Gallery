@@ -4,9 +4,13 @@ import android.graphics.Bitmap
 import android.net.Uri
 
 
+// Надо внести немного ясности в структуру данных файлов
+// dataFolder - тут хранятся альбомы фоток в формате uri...hash
+// storysFolder - тут хранится альбом {storyAlbumName} с историями в формате hash...story
+
 val delimiterPhotoAndStory = "<`\\=>/=/<\\=\\`=>"
 val nNewLine = "`<\\n>/n/<\\n\\n>`"
-val delimiter = "/.*:*.\\"
+val delimiterUriAndHash = "/.*:*.\\"
 
 var uris: MutableList<Uri> = mutableListOf()
 
@@ -20,4 +24,5 @@ var bitMap: MutableList<Bitmap> = mutableListOf()
 var images: MutableList<Uri> = mutableListOf() // Uri изображений
 
 var isPortrait = true
-var touchBar = false
+
+var pageTransition: MutableList<Boolean> = mutableListOf()

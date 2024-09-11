@@ -29,11 +29,11 @@ class FunctionsFiles: AppCompatActivity() {
                 out ->
             for (line in content)
             {
-                if (line.split(delimiter)[0] != imageName) {
+                if (line.split(delimiterUriAndHash)[0] != imageName) {
                     out.println(line)
                 }
                 else {
-                    hash = line.split(delimiter)[1]
+                    hash = line.split(delimiterUriAndHash)[1]
                 }
             }
         }
@@ -63,7 +63,7 @@ class FunctionsFiles: AppCompatActivity() {
         val fileRead = fileAlbum.readLines()
         var content: ArrayList<String> = ArrayList()
         fileRead.forEach { line ->
-            content.add(FunctionsImages().md5(line.split(delimiter)[1]))
+            content.add(FunctionsImages().md5(line.split(delimiterUriAndHash)[1]))
         }
 
         fileAlbum.printWriter().use {
@@ -72,7 +72,7 @@ class FunctionsFiles: AppCompatActivity() {
                 for (i in images.indices)
                 {
                     if (FunctionsImages().md5(images[i]) !in content) {
-                        out.println("${images[i]}${delimiter}${FunctionsImages().md5(images[i])}")
+                        out.println("${images[i]}${delimiterUriAndHash}${FunctionsImages().md5(images[i])}")
                     }
                 }
             }
@@ -80,7 +80,7 @@ class FunctionsFiles: AppCompatActivity() {
             else {
                 try {
                     if (FunctionsImages().md5(images[0]) !in content) {
-                        out.println("${images[0]}${delimiter}${FunctionsImages().md5(images[0])}")
+                        out.println("${images[0]}${delimiterUriAndHash}${FunctionsImages().md5(images[0])}")
                     }
                 }
                 catch (e: Exception) {
@@ -88,11 +88,22 @@ class FunctionsFiles: AppCompatActivity() {
             }
 
             fileRead.forEach { line ->
-                if (line.split(delimiter)[0] !in images) {
+                if (line.split(delimiterUriAndHash)[0] !in images) {
                     out.println("$line")
                 }
             }
         }
+    }
+
+    fun getHashesPhotosFromAlbum(context: Context, albumName: String): ArrayList<String> {
+        val path = context.filesDir
+        val letDirectory = File(path, dataFolder)
+        val fileAlbum = File(letDirectory, "${albumName(albumName)}.ini")
+        var content: ArrayList<String> = ArrayList()
+        fileAlbum.readLines().forEach { line ->
+            content.add(line.split(delimiterUriAndHash)[1])
+        }
+        return content
     }
 
     fun readStory(context: Context, fileStory: File, photoPath: String, fileStorys: MutableMap<String, String>): String {
@@ -124,9 +135,9 @@ class FunctionsFiles: AppCompatActivity() {
         val fileStorysContent = letDirectory.listFiles()
         fileStorysContent.forEach { i ->
             i.readLines().forEach{ line ->
-                val hash = line.split(delimiter)[1]
+                val hash = line.split(delimiterUriAndHash)[1]
                 if (hash in allHashs && hash !in hashList) {
-                    uris.add(line.split(delimiter)[0].toUri())
+                    uris.add(line.split(delimiterUriAndHash)[0].toUri())
                     hashList.add(hash)
                 }
             }
@@ -142,7 +153,7 @@ class FunctionsFiles: AppCompatActivity() {
         val fileStorysContent = letDirectory.listFiles()
         fileStorysContent.forEach { i ->
             i.readLines().forEach{ line ->
-                val hash = line.split(delimiter)[1]
+                val hash = line.split(delimiterUriAndHash)[1]
                 if (hash in allHashs && hash !in hashList) {
                     albums.add(i.toString())
                     hashList.add(hash)
@@ -172,7 +183,7 @@ class FunctionsFiles: AppCompatActivity() {
             if (file == album) {
                 val content = el.readLines()
                 content.forEach { line ->
-                    hashes.add(line.split(delimiter)[1])
+                    hashes.add(line.split(delimiterUriAndHash)[1])
                 }
                 el.delete()
             }
@@ -232,7 +243,7 @@ class FunctionsFiles: AppCompatActivity() {
             letDirectory.listFiles().forEach { i ->
                 print(i.readLines())
                 i.readLines().forEach{ line ->
-                    val hash = line.split(delimiter)[1]
+                    val hash = line.split(delimiterUriAndHash)[1]
                     hashes[hash] = hashes.getOrDefault(hash, 0) + 1
                 }
         }
@@ -268,7 +279,7 @@ class FunctionsFiles: AppCompatActivity() {
         val fileAlbum = File(letDirectory, "${albumName(albumName)}.ini")
         print(fileAlbum.readLines())
         fileAlbum.readLines().forEach{ line ->
-            if (photohash != line.split(delimiter)[1]) {
+            if (photohash != line.split(delimiterUriAndHash)[1]) {
                 lines.add(line)
             }
         }

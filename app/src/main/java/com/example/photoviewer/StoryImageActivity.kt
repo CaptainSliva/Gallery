@@ -29,6 +29,8 @@ class StoryImageActivity: Activity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if(pageTransition[0] && pageTransition[1]) finish()
+
 
         val intent = intent
         val albumPath = intent.extras!!.getString("albumName")!!
@@ -136,6 +138,7 @@ class StoryImageActivity: Activity() {
                     Log.d("PrintEND", wrt)
                 }
             }
+            pageTransition[0] = true
             val i = Intent(
                 applicationContext,
                 FullImageActivity::class.java
@@ -148,6 +151,12 @@ class StoryImageActivity: Activity() {
             startActivity(i)
         }
 
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        if (pageTransition[2]) finish()
     }
 
 //    override fun onStop() {

@@ -1,5 +1,6 @@
 package com.example.photoviewer
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Bitmap
@@ -120,9 +121,6 @@ class SearchOnComment: AppCompatActivity() {
                 searchPhotoOnStory(s.toString())
                 textSearch = s.toString()
                 textCountResults.text = "Найдено: ${images.size}"
-                // TODO Добавление элементов (правда пока не работает, надо разобраться. Немного работает
-                //  Надо понять как обновлять и ещё хэшей почему-то находит больше чем изображений для них.
-                //  Пофиксить↑)
                 addItems(layoutManager, adapter, albumsPaths, recyclerDataArrayList, imageRV, 0, 0)
             }
         })
@@ -174,8 +172,7 @@ class SearchOnComment: AppCompatActivity() {
 
 //                Toast.makeText(applicationContext, "images ${images.size}", Toast.LENGTH_SHORT).show()
         if (images.size > 4) Toast.makeText(applicationContext, "Найдено ${images.size} изображений. Пожалйуста, подождите.", Toast.LENGTH_LONG).show()
-
-        for (i in 0..images.size-1) {
+        for (i in 0..images.size - 1) {
             try {
                 contentResolver.takePersistableUriPermission(
                     images[i],
@@ -201,15 +198,6 @@ class SearchOnComment: AppCompatActivity() {
         isLoading = false
     }
 
-    fun getPhotos(album: String): ArrayList<Uri> {
-        val album = File(album)
-        var retAlbum: ArrayList<Uri> = ArrayList()
-        album.forEachLine { line ->
-            retAlbum.add(line.split(delimiter)[0].toUri())
-            Log.d("Print", retAlbum.toString())
-        }
-        return retAlbum
-    }
 
     fun searchPhotoOnStory(s: String) {
         if (s.isNotEmpty()) {

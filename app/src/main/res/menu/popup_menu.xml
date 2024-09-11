@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/search_on_comment"
-        android:title="Поиск по комментарию"/>
+        android:title="@string/search_on_comment"
+        android:orderInCategory="1"
+        android:icon="@drawable/baseline_image_search_24"/>
     <item
-        android:id="@+id/search_on_date"
-        android:title="Поиск по дате"/>
+        android:id="@+id/export_comments"
+        android:title="@string/export_comments"
+        android:orderInCategory="2"/>
     <item
-        android:id="@+id/gigigi"
-        android:title="☻"/>
+        android:id="@+id/import_comments"
+        android:title="@string/import_comments"
+        android:orderInCategory="3"/>
 </menu>

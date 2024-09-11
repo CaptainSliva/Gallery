@@ -3,6 +3,7 @@ package com.example.photoviewer
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.icu.text.Transliterator.Position
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -32,6 +33,8 @@ class FullImageActivity: Activity() {
     var albumPath = ""
     var imageName = ""
     var StoryAlbumName = "storys"
+    var touchBar = false
+
 
     val storysFolder = "PhotoViewerData/Storys"
 
@@ -61,10 +64,10 @@ class FullImageActivity: Activity() {
         val bShare: Button = findViewById(R.id.idShareButton)
         val textStory: TextView = findViewById(R.id.idTextStory)
         val menu: ConstraintLayout = findViewById(R.id.idSecondContainer)
-
+        val photoView: PhotoView = findViewById(R.id.full_image_view)
         var f = false
 
-        val photoView: PhotoView = findViewById(R.id.full_image_view)
+
         photoView.setImageBitmap(
             MediaStore.Images.Media.getBitmap(
                 this.contentResolver,
@@ -101,6 +104,7 @@ class FullImageActivity: Activity() {
                 applicationContext,
                 StoryImageActivity::class.java
             )
+            if (pageTransition[0]) pageTransition[1] = true
 
             // passing array index
             i.putExtra("photoID", position)
@@ -115,19 +119,20 @@ class FullImageActivity: Activity() {
                 getString(R.string.title_image_delete),
                 getString(R.string.messge_image_delete),
                 photoPath,
-                albumPath
+                albumPath,
+                position
             )
-
-            Log.d("PrintF", photoPath)
-            Log.d("PrintF", albumPath)
+            pageTransition[2] = true
         }
 
         bShare.setOnClickListener {
-            val sendIntent = Intent()
-            sendIntent.setAction(Intent.ACTION_SEND)
-            sendIntent.putExtra(Intent.EXTRA_STREAM, photoPath.toUri())
-            sendIntent.setType("image/jpeg")
-            startActivity(sendIntent)
+            print(photoPath)
+            print(photoPath.toUri())
+//            val sendIntent = Intent()
+//            sendIntent.setAction(Intent.ACTION_SEND)
+//            sendIntent.putExtra(Intent.EXTRA_STREAM, photoPath.toUri())
+//            sendIntent.setType("image/jpeg")
+//            startActivity(sendIntent)
         }
 
         photoView.setOnClickListener {
@@ -142,10 +147,9 @@ class FullImageActivity: Activity() {
             touchBar = !touchBar
         }
 
-
     }
 
-    fun deleteDialog(title: String, message: String, imageDeleteName: String, albumPath: String) {
+    fun deleteDialog(title: String, message: String, imageDeleteName: String, albumPath: String, position: Int) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(title)
         builder.setMessage("$message?")
@@ -154,11 +158,10 @@ class FullImageActivity: Activity() {
             "ОК"
         ) { dialog, which -> imageName = imageDeleteName
             FunctionsFiles().deletePhoto(this, albumPath, imageDeleteName)
-            val i = Intent(
-                applicationContext,
-                AlbumImagesActivity::class.java)
-            i.putExtra("albumPath", albumPath)
-            startActivity(i)
+            val i = Intent(applicationContext, AlbumImagesActivity::class.java)
+            i.putExtra("removePosition", position)
+            images.removeAt(position)
+            bitMap.removeAt(position)
             finish()
         }
 
@@ -167,6 +170,7 @@ class FullImageActivity: Activity() {
         ) { dialog, which -> dialog.cancel() }
         builder.show()
     }
+
 
 
 }

@@ -15,8 +15,10 @@
         android:backgroundTint="@color/violet"
         app:headerLayout="@layout/header_navigation_drawer"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
     </com.google.android.material.navigation.NavigationView>
 
     <ImageButton
@@ -28,19 +30,9 @@
         android:layout_marginTop="18dp"
         android:layout_marginEnd="16dp"
         android:background="#00805C5C"
-        android:src="@android:drawable/ic_dialog_dialer"
+        android:src="@drawable/baseline_menu_32"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <Spinner
-        android:id="@+id/action_spinner"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="102dp">
-    </Spinner>
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabView"
@@ -75,13 +67,14 @@
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
         android:layout_marginEnd="12dp"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        android:paddingBottom="80dp"
-        android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@+id/tabView">
-    </androidx.recyclerview.widget.RecyclerView>
+        app:layout_constraintTop_toBottomOf="@+id/tabView"
+        tools:listitem="@layout/card_item_albums"></androidx.recyclerview.widget.RecyclerView>
 
     <ImageButton
         android:id="@+id/idNewAlbumBtn"
@@ -89,11 +82,10 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="20dp"
-        android:src="@drawable/ic_add"
         android:background="@drawable/circle"
+        android:src="@drawable/ic_add"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-    </ImageButton>
+        app:layout_constraintEnd_toEndOf="parent"></ImageButton>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

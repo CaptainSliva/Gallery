@@ -7,10 +7,12 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
@@ -22,15 +24,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
-import com.google.android.material.tabs.TabLayoutMediator
 import java.io.File
 import java.io.IOException
 
@@ -88,6 +89,8 @@ class MainActivity : AppCompatActivity() {
         val albumRV: RecyclerView = findViewById(R.id.idAlbumsView)
         val newAlbum: ImageButton = findViewById(R.id.idNewAlbumBtn)
         val buttonActions: ImageButton = findViewById(R.id.idActionsBtn)
+        //val itemDecorator = SpacingItemDecorator(12) //TODO думать надо
+        //albumRV.addItemDecoration(itemDecorator)
         popupMenu(buttonActions)
 
 
@@ -282,11 +285,26 @@ class MainActivity : AppCompatActivity() {
                     startActivity(i)
                     true
                 }
-                R.id.search_on_date -> {
-                    Toast.makeText(this, "Поиск по дате", Toast.LENGTH_SHORT).show()
+                R.id.export_comments -> {
+                    val sendIntent = Intent(Intent.ACTION_SEND)
+                    val fileStorysPath = File(applicationContext.filesDir, "$storysFolder/$storyAlbumName.ini")
+                    val a = fileStorysPath.toUri()
+                    val b = a.scheme
+                    print("$a\n$b")
+//                    sendIntent.setAction(Intent.ACTION_SEND)
+//                    sendIntent.putExtra(Intent.EXTRA_STREAM, fileStorysPath.toUri()) // content://com.android.providers.media.documents/document/image%3A1000000089
+//                    sendIntent.setType("image/jpeg")
+//                    startActivity(sendIntent)
+//                    val uri = FileProvider.getUriForFile(this, "$this.provider", fileStorysPath)
+//                    sendIntent.setType("application/ini")
+//                    sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(("file:/$fileStorysPath")))
+//                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Sharing File...")
+//                    sendIntent.putExtra(Intent.EXTRA_TEXT, "Sharing File...")
+//                    startActivity(Intent.createChooser(sendIntent, "Share File"))
+
                     true
                 }
-                R.id.gigigi -> {
+                R.id.import_comments -> {
                     Toast.makeText(this, "☻☻☻", Toast.LENGTH_SHORT).show()
                     true
                 }
@@ -333,6 +351,12 @@ class MainActivity : AppCompatActivity() {
         istr.close()
 
         return bitmap
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val menuInflater = menuInflater
+        menuInflater.inflate(R.menu.popup_menu, menu)
+        return true
     }
 
     fun renameAlbumDialog(title: String, message: String, albumRenameName: String, albumName: String) {

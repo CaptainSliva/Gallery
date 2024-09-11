@@ -9,27 +9,26 @@
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/storyy"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
-        android:id="@+id/storyy"
-        tools:context=".StoryImageActivity"
-        >
+        tools:context=".StoryImageActivity">
 
         <ImageView
             android:id="@+id/idImage"
-            android:background="@color/black"
             android:layout_width="400dp"
             android:layout_height="400dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
+            android:adjustViewBounds="true"
+            android:background="@color/black"
+            android:scaleType="centerCrop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/rydra"
-            android:adjustViewBounds="true"
-            android:scaleType="centerCrop" />
+            app:srcCompat="@drawable/rydra" />
 
         <TextView
             android:id="@+id/idDate"
@@ -39,7 +38,7 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:text="TextView"
             android:textColor="@color/black"
@@ -51,14 +50,15 @@
         <ScrollView
             android:id="@+id/scrollStory"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="117dp"
             android:layout_below="@+id/idDate"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/idDate">
 
@@ -90,15 +90,12 @@
             android:layout_below="@+id/scrollStory"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="18dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/rectangle"
             android:text="Редактировать"
             android:textColor="@color/violet"
             android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/scrollStory" />
 

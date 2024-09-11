@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.core.net.toUri
 import java.io.File
 
-
+// Это для тестов (просмотра имён файлов) класс был как и list_of_filenames.xml
 var newContentResolver: ContentResolver? = null
 class ListOfFilenames: Activity() {
 
