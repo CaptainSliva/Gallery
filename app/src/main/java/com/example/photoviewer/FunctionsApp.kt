@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import android.text.InputType
 import android.util.Log
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -49,8 +50,9 @@ class FunctionsApp: AppCompatActivity() {
         return result;
     }
 
+    // удаление фото
     fun deleteDialog(context: Context, title: String, message: String, imageDeleteName: String, albumPath: String,
-                     recyclerDataArrayList: ArrayList<RecyclerData>, position: Int, adapter: RecyclerViewAdapter) {
+                     recyclerDataArrayList: ArrayList<RecyclerDataImages>, position: Int, adapter: GridRVAdapterImages) {
         val builder = AlertDialog.Builder(context)
         builder.setTitle(title)
         builder.setMessage("$message?")
@@ -61,8 +63,7 @@ class FunctionsApp: AppCompatActivity() {
             FunctionsFiles().deletePhoto(context, albumPath, imageDeleteName)
             recyclerDataArrayList.removeAt(position)
             images.removeAt(position)
-            bitMap.removeAt(position)
-            adapter.notifyDataSetChanged()
+            adapter.notifyItemRemoved(position)
         }
 
         builder.setNegativeButton(
@@ -73,7 +74,7 @@ class FunctionsApp: AppCompatActivity() {
 
     //Удаление альбома
     fun deleteAlbumDialog(context: Context, title: String, message: String, albumDeleteName: String, albumName: String,
-                          recyclerDataArrayList: ArrayList<RecyclerData>, position: Int, adapter: RecyclerViewAdapter) {
+                          recyclerDataArrayList: ArrayList<RecyclerDataAlbums>, position: Int, adapter: GridRVAdapterAlbums) {
         var albumName = albumName
         val builder = AlertDialog.Builder(context)
         builder.setTitle(title)
@@ -84,7 +85,7 @@ class FunctionsApp: AppCompatActivity() {
         ) { dialog, which -> albumName = albumDeleteName
             FunctionsFiles().deleteAlbum(context, albumName)
             recyclerDataArrayList.removeAt(position)
-            adapter.notifyDataSetChanged()
+            adapter.notifyItemRemoved(position)
         }
 
         builder.setNegativeButton(
@@ -98,6 +99,12 @@ class FunctionsApp: AppCompatActivity() {
         for (i in 0..2) {
             pageTransition.add(false)
         }
+    }
+
+    fun editHat(path: String) {
+        val convertView = layoutInflater!!.inflate(R.layout.header_navigation_drawer, null)
+        val header = convertView.findViewById<TextView>(R.id.header)
+        header.text = path
     }
 
 

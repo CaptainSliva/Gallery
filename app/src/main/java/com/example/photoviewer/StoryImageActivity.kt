@@ -98,8 +98,9 @@ class StoryImageActivity: Activity() {
             else {
                 textViewStory.isFocusableInTouchMode = false
                 buttonEdit.text = "Редактировать"
-                fileStorys[FunctionsImages().md5(photoPath)] = textViewStory.text.toString().replace("\n", nNewLine)
-                Log.d("Print", "${FunctionsImages().md5(photoPath)} : ${textViewStory.text}")
+                textViewStory.clearFocus()
+                fileStorys[FunctionsImages().md5(photoPath.toUri())] = textViewStory.text.toString().replace("\n", nNewLine)
+                Log.d("Print", "${FunctionsImages().md5(photoPath.toUri())} : ${textViewStory.text}")
                 val path = applicationContext.filesDir
                 val letDirectory = File(path, storysFolder)
                 val fileStory = File(letDirectory, "$storyAlbumName.ini")
@@ -123,8 +124,8 @@ class StoryImageActivity: Activity() {
 
         imageStory.setOnClickListener {
 
-            fileStorys[FunctionsImages().md5(photoPath)] = textViewStory.text.toString().replace("\n", nNewLine)
-            Log.d("Print", "${FunctionsImages().md5(photoPath)} : ${textViewStory.text}")
+            fileStorys[FunctionsImages().md5(photoPath.toUri())] = textViewStory.text.toString().replace("\n", nNewLine)
+            Log.d("Print", "${FunctionsImages().md5(photoPath.toUri())} : ${textViewStory.text}")
             val path = applicationContext.filesDir
             val letDirectory = File(path, storysFolder)
             val fileStory = File(letDirectory, "$storyAlbumName.ini")

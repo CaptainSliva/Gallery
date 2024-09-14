@@ -49,7 +49,6 @@ class SearchOnComment: AppCompatActivity() {
     var findHash: MutableList<String> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        itemModel = "image"
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.search_on_comments)
@@ -68,12 +67,10 @@ class SearchOnComment: AppCompatActivity() {
             textRegx.setTextColor(this.resources.getColor(R.color.white))
         }
 
-        Log.d("PrintUris", uris.toString())
-
         val imageRV: RecyclerView = findViewById(R.id.idImageView)
-        var recyclerDataArrayList = ArrayList<RecyclerData>()
+        var recyclerDataArrayList = ArrayList<RecyclerDataImages>()
         val layoutManager = GridLayoutManager(this, numberOfColumns)
-        val adapter = RecyclerViewAdapter(recyclerDataArrayList, this@SearchOnComment)
+        val adapter = GridRVAdapterImages(recyclerDataArrayList, this@SearchOnComment)
 
 
         imageRV.addOnItemTouchListener(
@@ -162,12 +159,8 @@ class SearchOnComment: AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    override fun onResume() {
-        super.onResume()
-        itemModel = "image"
-    }
 
-    fun addItems(layoutManager: GridLayoutManager, adapter: RecyclerViewAdapter, paths: MutableList<String>, recyclerDataArrayList: ArrayList<RecyclerData>, imageRV: RecyclerView, start: Int, stop: Int) {
+    fun addItems(layoutManager: GridLayoutManager, adapter: GridRVAdapterImages, paths: MutableList<String>, recyclerDataArrayList: ArrayList<RecyclerDataImages>, imageRV: RecyclerView, start: Int, stop: Int) {
 
 
 //                Toast.makeText(applicationContext, "images ${images.size}", Toast.LENGTH_SHORT).show()
@@ -184,8 +177,7 @@ class SearchOnComment: AppCompatActivity() {
                         images[i]
                     ), 500
                 )
-                bitMap.add(bmp)
-                recyclerDataArrayList.add(RecyclerData(i.toString(), bitMap[i]))
+                recyclerDataArrayList.add(RecyclerDataImages(bmp))
                 imageRV.layoutManager = layoutManager
                 imageRV.adapter = adapter
             } catch (e: Exception) {
@@ -231,9 +223,8 @@ class SearchOnComment: AppCompatActivity() {
     }
 
 
-    fun clearAll(recyclerDataArrayList: ArrayList<RecyclerData>, adapter: RecyclerViewAdapter)
+    fun clearAll(recyclerDataArrayList: ArrayList<RecyclerDataImages>, adapter: GridRVAdapterImages)
     {
-        bitMap.clear()
         findHash.clear()
         images.clear()
         recyclerDataArrayList.clear()

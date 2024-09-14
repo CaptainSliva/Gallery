@@ -34,9 +34,8 @@ class FullImageActivity: Activity() {
     var imageName = ""
     var StoryAlbumName = "storys"
     var touchBar = false
+    var isPortrait = true
 
-
-    val storysFolder = "PhotoViewerData/Storys"
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -161,7 +160,6 @@ class FullImageActivity: Activity() {
             val i = Intent(applicationContext, AlbumImagesActivity::class.java)
             i.putExtra("removePosition", position)
             images.removeAt(position)
-            bitMap.removeAt(position)
             finish()
         }
 

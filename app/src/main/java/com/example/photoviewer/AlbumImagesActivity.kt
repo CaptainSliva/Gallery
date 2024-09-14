@@ -24,28 +24,31 @@ import java.io.File
 
 class AlbumImagesActivity: Activity() {
 
-    var albumPath = ""
-    var imageName = ""
+    var albumName = ""
     val numberOfColumns = 4
     var isLoading = false
     var imagesCount = 0
-    var fileList = ArrayList<String>()
+    var fileList: MutableList<String> = mutableListOf()
     var retFromAddImage = false
+    lateinit var allPhotos: MutableList<Uri>
+    val add = 20
+    var stop = add
+    var path = ""
 
     lateinit var imageRV: RecyclerView
-    var recyclerDataArrayList = ArrayList<RecyclerData>()
+    var recyclerDataArrayList = ArrayList<RecyclerDataImages>()
     val layoutManager = GridLayoutManager(this, numberOfColumns)
-    val adapter = RecyclerViewAdapter(recyclerDataArrayList, this@AlbumImagesActivity)
+    val adapter = GridRVAdapterImages(recyclerDataArrayList, this@AlbumImagesActivity)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (pageTransition.isEmpty()) FunctionsApp().initialPageTransition()
 
-        bitMap.clear()
         images.clear()
-        itemModel = "image"
 
         val intent = intent
-        val path = intent.extras!!.getString("albumPath")
+        path = intent.extras!!.getString("albumName").toString()
+//        FunctionsApp().editHat(path!!)
+        allPhotos = getPhotos(path)
 
 
 
@@ -54,12 +57,13 @@ class AlbumImagesActivity: Activity() {
         changeColorStatusbar(R.color.violet, this, this.window)
         isDarkTheme(resources, Configuration(), findViewById<ConstraintLayout>(R.id.images), this)
 
-        Log.d("PrintUris", uris.toString())
-        albumPath = path!!
+        albumName = path!!
 
 
         val newImage: ImageButton = findViewById(R.id.idNewImageBtn)
         imageRV = findViewById(R.id.idImageView)
+        imageRV.layoutManager = layoutManager
+        imageRV.adapter = adapter
 //        var recyclerDataArrayList = ArrayList<RecyclerData>()
 //        val layoutManager = GridLayoutManager(this, numberOfColumns)
 //        val adapter = RecyclerViewAdapter(recyclerDataArrayList, this@AlbumImagesActivity)
@@ -68,34 +72,16 @@ class AlbumImagesActivity: Activity() {
 //            addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, start = ct, stop = ct+4)
 //            ct+=4
 //        }
-        addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, 0, 0)
+        addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, 0, stop)
 
+        adapter.setOnLoadMoreListener(object: OnLoadMoreListener {
+            override fun onLoadMore() {
+                addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, stop, stop+add)
+                stop+=20
+                adapter.endLoading() //когда загрузка завершена
 
-
-//        imageRV.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-//                super.onScrolled(recyclerView, dx, dy)
-//                val visibleItemCount = layoutManager.childCount
-//                val totalItemCount = layoutManager.itemCount
-//                val firstVisibleItem = layoutManager.findFirstVisibleItemPosition()
-//                val lastVisibleItem = layoutManager.findLastVisibleItemPosition()
-//
-//                if (!isLoading) {
-//                    Log.i("Roll", "visibleItemCount : $visibleItemCount\ntotalItemCount : $totalItemCount" +
-//                            "\nfirstVisibleItem : $firstVisibleItem\n lastVisibleItem : $lastVisibleItem")
-//                    if ( (visibleItemCount+firstVisibleItem) >= totalItemCount) {
-//                        ct = lastVisibleItem
-//                        isLoading = true
-//                        for ( i in lastVisibleItem+1..lastVisibleItem+4) {
-//                            addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, lastVisibleItem, i)
-//                        }
-//                    }
-//                }
-//            }
-//        })
-
-
-
+            }
+        })
 
         imageRV.addOnItemTouchListener(
             RecyclerTouchListener(
@@ -117,7 +103,7 @@ class AlbumImagesActivity: Activity() {
                     override fun onLongClick(view: View, position: Int) {
                         FunctionsApp().deleteDialog( this@AlbumImagesActivity,
                             getString(R.string.title_image_delete), getString(R.string.messge_image_delete), images[position].toString(),
-                            albumPath, recyclerDataArrayList, position, adapter
+                            albumName, recyclerDataArrayList, position, adapter
                         )
                     }
 
@@ -132,13 +118,12 @@ class AlbumImagesActivity: Activity() {
 
     override fun onResume() {
         super.onResume()
-        itemModel = "image"
         print("resume")
         if (retFromAddImage) {
-            val hashes = FunctionsFiles().getHashesPhotosFromAlbum(applicationContext, albumPath)
-            FunctionsFiles().addPhotoToAlbumFile(applicationContext, albumPath, fileList)
+            val hashes = FunctionsFiles().getHashesPhotosFromAlbum(applicationContext, albumName)
+            FunctionsFiles().addPhotoToAlbumFile(applicationContext, albumName, fileList)
             fileList.forEach { image ->
-                if (FunctionsImages().md5(image) !in hashes) {
+                if (FunctionsImages().md5(image.toUri()) !in hashes) {
 
 
                     val bmp = FunctionsImages().compressBitmap(
@@ -149,17 +134,23 @@ class AlbumImagesActivity: Activity() {
                     )
 
                     images.add(0, image.toUri())
-                    recyclerDataArrayList.add(0, RecyclerData("", bmp))
-                    bitMap.add(0, bmp)
+                    recyclerDataArrayList.add(0, RecyclerDataImages(bmp))
+                    adapter.notifyItemChanged(0)
                 }
             }
             retFromAddImage = false
             fileList.clear()
         }
+        else{
+            if (recyclerDataArrayList.size < stop && allPhotos.size > stop) {
+                addItems(layoutManager, adapter, path, recyclerDataArrayList, imageRV, stop, stop+add)
+                stop+=20
+            }
+        }
         if (pageTransition[2]) {
             recyclerDataArrayList.removeAt(intent.extras!!.getInt("removePosition"))
+            adapter.notifyItemChanged(intent.extras!!.getInt("removePosition"))
         }
-        adapter.notifyDataSetChanged()
         FunctionsApp().initialPageTransition()
 
     }
@@ -176,94 +167,40 @@ class AlbumImagesActivity: Activity() {
 //    }
 
 
-    
-    fun addItems(layoutManager: GridLayoutManager, adapter: RecyclerViewAdapter, path: String, recyclerDataArrayList: ArrayList<RecyclerData>, imageRV: RecyclerView, start: Int, stop: Int) {
+    fun addItems(layoutManager: GridLayoutManager, adapter: GridRVAdapterImages, path: String, recyclerDataArrayList: ArrayList<RecyclerDataImages>, imageRV: RecyclerView, start: Int, stop: Int) {
+        var stop = stop
 
-        var stop = stop-1
-//        var flag = false
         CoroutineScope(Dispatchers.Main).launch {
-            val photos = withContext(Dispatchers.IO) { getPhotos(path) }
+            val photos = withContext(Dispatchers.IO) { allPhotos }
             imagesCount = photos.size
-            Toast.makeText(applicationContext, "photos ${photos.size}", Toast.LENGTH_SHORT).show()
-            stop = imagesCount-1 // Пока не работает загрузка по частям
+
+            if (stop == 0) stop = imagesCount-1
             if (imagesCount < stop) {
-                if (imagesCount-stop > 0) {
-                    stop = start+(imagesCount-stop)
-                }
-                else {
-                    stop = imagesCount-1
-                }
+                stop = imagesCount-1
+                adapter.setNoMore(true) //если подгружать больше нечего
             }
-//            if (stop <= start) {
-//                return@launch
-//            }
+
             Log.i("first", start.toString())
             Log.i("last", stop.toString())
             for (i in start..stop) {
                 if (images.size < imagesCount) {
-//                    Log.d("PrintPhoto", photos[i].toString())
                     images.add(photos[i])
-                    Log.i("Between", "$i|${images.size}")
 
+                    contentResolver.takePersistableUriPermission(
+                        images[i],
+                        (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    )
+                    val bmp = FunctionsImages().compressBitmap(
+                        MediaStore.Images.Media.getBitmap(
+                            this@AlbumImagesActivity.contentResolver,
+                            images[i]
+                        ), 500
+                    )
+                    recyclerDataArrayList.add(RecyclerDataImages(bmp))
                 }
-
             }
-
             Toast.makeText(applicationContext, "images ${images.size}", Toast.LENGTH_SHORT).show()
-
-            for (i in start..stop) {
-                if (bitMap.size < imagesCount) {
-                    try {
-                        contentResolver.takePersistableUriPermission(
-                            images[i],
-                            (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        )
-                        val bmp = FunctionsImages().compressBitmap(
-                            MediaStore.Images.Media.getBitmap(
-                                this@AlbumImagesActivity.contentResolver,
-                                images[i]
-                            ), 500
-                        )
-                        bitMap.add(bmp)
-                        recyclerDataArrayList.add(RecyclerData(i.toString(), bitMap[i]))
-                        imageRV.layoutManager = layoutManager
-                        imageRV.adapter = adapter
-                    } catch (e: Exception) {
-                        Toast.makeText(this@AlbumImagesActivity, e.toString(), Toast.LENGTH_LONG)
-                            .show()
-                        val hash = FunctionsImages().md5(images[i].toString())
-                        FunctionsFiles().deleteUnUseImages(applicationContext, albumPath, hash)
-                        FunctionsFiles().deleteUnUseStorys(applicationContext, hash)
-                    }
-                }
-            }
-
-//            for (i in images.indices) {
-//
-//                try {
-//                    contentResolver.takePersistableUriPermission(
-//                        images[i],
-//                        (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-//                    )
-//                    val bmp = compressBitmap(
-//                        MediaStore.Images.Media.getBitmap(
-//                            this@AlbumImagesActivity.contentResolver,
-//                            images[i]
-//                        ), 500
-//                    )
-//                    bitMap.add(bmp)
-////                bmp = null
-//                } catch (e: Exception) {
-//                    Toast.makeText(this@AlbumImagesActivity, e.toString(), Toast.LENGTH_LONG).show()
-//                }
-//            }
-//
-//
-//            for (i in images.indices) {
-//                recyclerDataArrayList.add(RecyclerData(i.toString(), bitMap[i]))
-//                imageRV.layoutManager = layoutManager
-//                imageRV.adapter = adapter
-//            }
+            adapter.notifyDataSetChanged()
         }
         isLoading = false
     }
@@ -277,14 +214,25 @@ class AlbumImagesActivity: Activity() {
         startActivityForResult(intent, 1)
     }
 
-    fun getPhotos(album: String): ArrayList<Uri> {
+    fun getPhotos(album: String): MutableList<Uri> {
         val album = File(album)
 //        Log.d("PrintAlbum", album.toString())
 //        Log.d("PrintAlbum", album.readLines().toString())
-        var retAlbum: ArrayList<Uri> = ArrayList()
+        var retAlbum: MutableList<Uri> = mutableListOf()
+
         album.forEachLine { line ->
-            retAlbum.add(line.split(delimiterUriAndHash)[0].toUri())
+            val uri = line.split(delimiterUriAndHash)[0].toUri()
+            val hash = FunctionsImages().md5(uri)
+
+            try {
+                this.contentResolver.openInputStream(uri)
+                retAlbum.add(line.split(delimiterUriAndHash)[0].toUri())
+            } catch (e: java.lang.Exception) {
+                FunctionsFiles().deleteUnUseImages(applicationContext, albumName, hash)
+                FunctionsFiles().deleteUnUseStorys(applicationContext, hash)
+            }
         }
+        Toast.makeText(applicationContext, "photos ${retAlbum.size}", Toast.LENGTH_SHORT).show()
         return retAlbum
     }
 

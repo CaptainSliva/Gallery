@@ -7,6 +7,9 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -21,10 +24,11 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -34,6 +38,8 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import java.io.File
 import java.io.IOException
+import java.lang.System.out
+import kotlin.math.log
 
 
 class MainActivity : AppCompatActivity() {
@@ -45,7 +51,6 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        itemModel = "album"
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -55,40 +60,24 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-
-
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
-                != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
-                    REQUEST_CODE_PERMISSIONS
-                )
-            }
-
-        }
-
-        else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                    REQUEST_CODE_PERMISSIONS
-                )
-            }
-        }
-
+        getPermissions()
 
         changeColorStatusbar(R.color.violet, this, this.window)
         isDarkTheme(resources, Configuration(), findViewById<ConstraintLayout>(R.id.main), this)
 
-
         val albumRV: RecyclerView = findViewById(R.id.idAlbumsView)
         val newAlbum: ImageButton = findViewById(R.id.idNewAlbumBtn)
         val buttonActions: ImageButton = findViewById(R.id.idActionsBtn)
+
+        val DarkModeFlags = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK// Retrieve the Mode of the App.
+        val isDarkModeOff = DarkModeFlags == Configuration.UI_MODE_NIGHT_NO//TODO думать надо
+        if (isDarkModeOff) {
+            val unwrappedDrawable =
+                AppCompatResources.getDrawable(this, R.drawable.baseline_image_search_24)
+            val wrappedDrawable = DrawableCompat.wrap(unwrappedDrawable!!)
+            DrawableCompat.setTint(wrappedDrawable, Color.BLACK)
+        }
+
         //val itemDecorator = SpacingItemDecorator(12) //TODO думать надо
         //albumRV.addItemDecoration(itemDecorator)
         popupMenu(buttonActions)
@@ -115,7 +104,7 @@ class MainActivity : AppCompatActivity() {
         })
 
 
-        var albumList = ArrayList<RecyclerData>()
+        var albumList = ArrayList<RecyclerDataAlbums>()
         val albums = ArrayList<String>()
         FunctionsFiles().getAlbumsFiles(applicationContext).forEach { album -> albums.add(album) }
 
@@ -136,12 +125,12 @@ class MainActivity : AppCompatActivity() {
 
 
         for (i in albums.indices) {
-            albumList += RecyclerData(FunctionsFiles().albumName(albums[i]), bitMap[0])
+            albumList += RecyclerDataAlbums(FunctionsFiles().albumName(albums[i]), bitMap[0])
         }
 
 
         // Запуск окна с изображениями
-        val adapter = RecyclerViewAdapter(albumList, this)
+        val adapter = GridRVAdapterAlbums(albumList, this)
         val layoutManager = GridLayoutManager(this, numberOfColumns)
         albumRV.layoutManager = layoutManager
         albumRV.adapter = adapter
@@ -161,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                             applicationContext,
                             AlbumImagesActivity::class.java
                         )
-                        i.putExtra("albumPath", albums[position])
+                        i.putExtra("albumName", albums[position])
                         startActivity(i)
                     }
 
@@ -288,9 +277,18 @@ class MainActivity : AppCompatActivity() {
                 R.id.export_comments -> {
                     val sendIntent = Intent(Intent.ACTION_SEND)
                     val fileStorysPath = File(applicationContext.filesDir, "$storysFolder/$storyAlbumName.ini")
-                    val a = fileStorysPath.toUri()
-                    val b = a.scheme
-                    print("$a\n$b")
+
+                    val albums = FunctionsFiles().getAlbumsFiles(this)
+                    var content = "Истории\n${fileStorysPath.readLines()}\n\n\n"
+                    albums.forEach { i ->
+                        content+="${FunctionsFiles().albumName(i)}\n+${File(i).readLines()}\n\n"
+                    }
+                    val logFile = File(applicationContext.filesDir, "LOG.txt")
+                    logFile.writeBytes(content.encodeToByteArray())
+                    sendIntent.setAction(Intent.ACTION_SEND)
+                    sendIntent.putExtra(Intent.EXTRA_TEXT, logFile.readText())
+                    sendIntent.setType("text/plain")
+                    startActivity(sendIntent)
 //                    sendIntent.setAction(Intent.ACTION_SEND)
 //                    sendIntent.putExtra(Intent.EXTRA_STREAM, fileStorysPath.toUri()) // content://com.android.providers.media.documents/document/image%3A1000000089
 //                    sendIntent.setType("image/jpeg")
@@ -336,11 +334,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-    override fun onResume() {
-        super.onResume()
-        itemModel = "album"
-    }
 
     @Throws(IOException::class)
     private fun getBitmapFromAsset(strName: String): Bitmap {
@@ -521,7 +514,31 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun getPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
+                    REQUEST_CODE_PERMISSIONS
+                )
+            }
 
+        }
+
+        else {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    REQUEST_CODE_PERMISSIONS
+                )
+            }
+        }
+
+    }
 
 
 }

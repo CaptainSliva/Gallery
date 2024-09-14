@@ -56,14 +56,14 @@ class FunctionsFiles: AppCompatActivity() {
         return name.split('/')[name.split("/").size - 1].split('.')[0]
     }
 
-    fun addPhotoToAlbumFile(context: Context, albumName: String, images: ArrayList<String>) {
+    fun addPhotoToAlbumFile(context: Context, albumName: String, images: MutableList<String>) {
         val path = context.filesDir
         val letDirectory = File(path, dataFolder)
         val fileAlbum = File(letDirectory, "${albumName(albumName)}.ini")
         val fileRead = fileAlbum.readLines()
         var content: ArrayList<String> = ArrayList()
         fileRead.forEach { line ->
-            content.add(FunctionsImages().md5(line.split(delimiterUriAndHash)[1]))
+            content.add(FunctionsImages().md5(line.split(delimiterUriAndHash)[1].toUri()))
         }
 
         fileAlbum.printWriter().use {
@@ -71,16 +71,16 @@ class FunctionsFiles: AppCompatActivity() {
             if (images.size > 1) {
                 for (i in images.indices)
                 {
-                    if (FunctionsImages().md5(images[i]) !in content) {
-                        out.println("${images[i]}${delimiterUriAndHash}${FunctionsImages().md5(images[i])}")
+                    if (FunctionsImages().md5(images[i].toUri()) !in content) {
+                        out.println("${images[i]}${delimiterUriAndHash}${FunctionsImages().md5(images[i].toUri())}")
                     }
                 }
             }
 
             else {
                 try {
-                    if (FunctionsImages().md5(images[0]) !in content) {
-                        out.println("${images[0]}${delimiterUriAndHash}${FunctionsImages().md5(images[0])}")
+                    if (FunctionsImages().md5(images[0].toUri()) !in content) {
+                        out.println("${images[0]}${delimiterUriAndHash}${FunctionsImages().md5(images[0].toUri())}")
                     }
                 }
                 catch (e: Exception) {
@@ -115,7 +115,7 @@ class FunctionsFiles: AppCompatActivity() {
                 val fname = file.split(delimiterPhotoAndStory)[0]
                 val fstory = file.split(delimiterPhotoAndStory)[1]
                 fileStorys[fname] = fstory
-                if (fname == FunctionsImages().md5(photoPath)) {
+                if (fname == FunctionsImages().md5(photoPath.toUri())) {
                     theStory = fstory.replace(nNewLine, "\n")
                 }
             }
@@ -220,7 +220,7 @@ class FunctionsFiles: AppCompatActivity() {
         File(albumForRenameName).renameTo(File("$currentAlbumPath/$albumName.ini"))
     }
 
-    fun getAlbumsFiles(context: Context): ArrayList<String> {
+    fun getAlbumsFiles(context: Context): ArrayList<String> { // Возвращает пути до альбомов
         var albums = ArrayList<String>()
         val path = context.filesDir
         val letDirectory = File(path, dataFolder)

@@ -3,6 +3,7 @@ package com.example.photoviewer
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.ThumbnailUtils
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import java.io.ByteArrayOutputStream
 import java.math.BigInteger
@@ -10,9 +11,9 @@ import java.security.MessageDigest
 
 class FunctionsImages {
 
-    fun md5(input:String): String { // По сути на вход идёт Uri в виде строки
+    fun md5(input: Uri): String { // На вход идёт Uri изображения
         val md = MessageDigest.getInstance("MD5")
-        return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+        return BigInteger(1, md.digest(input.toString().toByteArray())).toString(16).padStart(32, '0')
     }
 
     fun compressBitmap(bmp: Bitmap, size: Int): Bitmap {
