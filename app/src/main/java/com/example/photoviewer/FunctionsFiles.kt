@@ -56,7 +56,7 @@ class FunctionsFiles: AppCompatActivity() {
         return name.split('/')[name.split("/").size - 1].split('.')[0]
     }
 
-    fun addPhotoToAlbumFile(context: Context, albumName: String, images: MutableList<String>) {
+    fun addPhotoToAlbumFile(context: Context, albumName: String, images: MutableList<Uri>) {
         val path = context.filesDir
         val letDirectory = File(path, dataFolder)
         val fileAlbum = File(letDirectory, "${albumName(albumName)}.ini")
@@ -71,16 +71,16 @@ class FunctionsFiles: AppCompatActivity() {
             if (images.size > 1) {
                 for (i in images.indices)
                 {
-                    if (FunctionsImages().md5(images[i].toUri()) !in content) {
-                        out.println("${images[i]}${delimiterUriAndHash}${FunctionsImages().md5(images[i].toUri())}")
+                    if (FunctionsImages().md5(images[i]) !in content) {
+                        out.println("${images[i]}${delimiterUriAndHash}${FunctionsImages().md5(images[i])}")
                     }
                 }
             }
 
             else {
                 try {
-                    if (FunctionsImages().md5(images[0].toUri()) !in content) {
-                        out.println("${images[0]}${delimiterUriAndHash}${FunctionsImages().md5(images[0].toUri())}")
+                    if (FunctionsImages().md5(images[0]) !in content) {
+                        out.println("${images[0]}${delimiterUriAndHash}${FunctionsImages().md5(images[0])}")
                     }
                 }
                 catch (e: Exception) {
@@ -88,7 +88,7 @@ class FunctionsFiles: AppCompatActivity() {
             }
 
             fileRead.forEach { line ->
-                if (line.split(delimiterUriAndHash)[0] !in images) {
+                if (line.split(delimiterUriAndHash)[0].toUri() !in images) {
                     out.println("$line")
                 }
             }
@@ -127,7 +127,7 @@ class FunctionsFiles: AppCompatActivity() {
     }
 
     fun findImagesOnHash(context: Context, allHashs: MutableList<String>): MutableList<Uri> {
-        //TODO Найти картинку по хэшу md5(yourUri.toString())
+        //TODO Найти картинку по хэшу md5(yourUri)
         var hashList: MutableList<String> = mutableListOf()
         var uris: MutableList<Uri> = mutableListOf()
         val path = context.filesDir
@@ -136,9 +136,16 @@ class FunctionsFiles: AppCompatActivity() {
         fileStorysContent.forEach { i ->
             i.readLines().forEach{ line ->
                 val hash = line.split(delimiterUriAndHash)[1]
+
                 if (hash in allHashs && hash !in hashList) {
-                    uris.add(line.split(delimiterUriAndHash)[0].toUri())
-                    hashList.add(hash)
+                    try {
+                        context.contentResolver.openInputStream(line.split(delimiterUriAndHash)[0].toUri())
+                        uris.add(line.split(delimiterUriAndHash)[0].toUri())
+                        hashList.add(hash)
+                    } catch (e: java.lang.Exception) {
+                        FunctionsFiles().deleteUnUseImages(context, albumName(i.name.split(".")[0]), hash)
+                        FunctionsFiles().deleteUnUseStorys(context, hash)
+                    }
                 }
             }
         }

@@ -66,21 +66,12 @@
 
         <activity
             android:name=".StoryImageActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.PHOTO" />
 
                 <category android:name="android.intent.category.STORY" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".ListOfFilenames"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 

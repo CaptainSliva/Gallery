@@ -141,6 +141,7 @@ class MainActivity : AppCompatActivity() {
                 albumRV,
                 object : RecyclerTouchListener.ClickListener {
                     override fun onClick(view: View, position: Int) {
+                        print(albums)
                         Toast.makeText(
                             applicationContext, "Album ${albumList[position].getTitle()} selected",
                             Toast.LENGTH_SHORT
@@ -150,7 +151,7 @@ class MainActivity : AppCompatActivity() {
                             applicationContext,
                             AlbumImagesActivity::class.java
                         )
-                        i.putExtra("albumName", albums[position])
+                        i.putExtra("albumPath", albums[position])
                         startActivity(i)
                     }
 
@@ -187,67 +188,8 @@ class MainActivity : AppCompatActivity() {
                     }
                 })
         )
-//        albumRV.onItemClickListener = AdapterView.OnItemClickListener { u, t, position, r ->
-//            Toast.makeText(
-//                applicationContext, albumList[position].courseName + " selected",
-//                Toast.LENGTH_SHORT
-//            ).show()
-//
-//            val i = Intent(
-//                applicationContext,
-//                AlbumImagesActivity::class.java
-//            )
-//            i.putExtra("albumPath", albums[position])
-//            startActivity(i)
-//
-////            val tst = Intent(applicationContext, ImageTest::class.java)
-////            tst.putExtra("albumPath", albums[position])
-////            startActivity(tst)
-//        }
-//
-//        // Удаление альбома
-//        albumRV.onItemLongClickListener = OnItemLongClickListener { parent, view, index, id ->
-//
-//            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-//            builder
-//                .setTitle(getString(R.string.choose_action_with_album))
-//                .setPositiveButton("") { dialog, which ->
-//                    // Do something.
-//                }
-//                .setNegativeButton("") { dialog, which ->
-//                    // Do something else.
-//                }
-//                .setItems(arrayOf(getString(R.string.choose_action_delete_album), getString(R.string.choose_action_rename_album))) { dialog, which ->
-//                    if (which == 0) {
-//                        dialog(
-//                            getString(R.string.title_album_delete),
-//                            getString(R.string.messge_album_delete),
-//                            albums[index]
-//                        )
-//                    }
-//                    if (which == 1) {
-//                        renameAlbumDialog(
-//                            getString(R.string.title_rename_album),
-//                            getString(R.string.message_rename_album),
-//                            albums[index]
-//                        )
-//                    }
-//                }
-//
-//            val dialog: AlertDialog = builder.create()
-//            dialog.show()
-//
-//
-//
-//            true
-//        }
-
 
         newAlbum.setOnClickListener {
-//            val photoPickerIntent = Intent(Intent.ACTION_PICK)
-//            photoPickerIntent.setType("image/*")
-//            photoPickerIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-//            startActivityForResult(photoPickerIntent, GALLERY_REQUEST)
             createAlbumDialog(getString(R.string.title_new_album), getString(R.string.message_new_album))
         }
 
@@ -446,12 +388,11 @@ class MainActivity : AppCompatActivity() {
 //        TODO("Я так понимаю, что надо формировать или список или битмап выбранных объектов. И список не список, а файл с путями до фоток, что бы потом их подгружать при открытии альбома")
 
         if (resultCode == GALLERY_REQUEST) {
-            var fileList = ArrayList<String>()
+            var fileList = ArrayList<Uri>()
             val selectedImages = resultData!!.clipData
             for (i in 0..<selectedImages!!.itemCount) {
-                val path = selectedImages?.getItemAt(i)?.uri.toString()
+                val path = selectedImages?.getItemAt(i)?.uri!!
                 fileList.add(path)
-                Log.d("PrintAddPh", path)
 
             }
             FunctionsFiles().addPhotoToAlbumFile(applicationContext, albumName, fileList)
@@ -473,7 +414,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        var fileList = ArrayList<String>()
+        var fileList = ArrayList<Uri>()
 
         if (requestCode == 1) {
 
@@ -484,18 +425,17 @@ class MainActivity : AppCompatActivity() {
                     resultData.data!!,
                     (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 )
-                fileList.add(resultData.data.toString())
+                fileList.add(0, resultData.data!!)
             }
 
             if (resultData?.clipData != null) {
                 val selectedImages = resultData!!.clipData
                 Log.i("Path:", resultData.toString())
                 for (i in 0..<selectedImages!!.itemCount) {
-                    val path = selectedImages?.getItemAt(i)?.uri.toString()
-                    fileList.add(path)
-                    Log.d("PrintAddPh", path)
+                    val path = selectedImages?.getItemAt(i)?.uri!!
+                    fileList.add(0, path)
                     contentResolver.takePersistableUriPermission(
-                        path.toUri(),
+                        path,
                         (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                     )
 

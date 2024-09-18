@@ -15,6 +15,8 @@ class RecyclerDataImages(val img: Bitmap) {
         this.image = image
     }
 
+
+
 //    fun getTitle() : String? {
 //        return album_name
 //    }

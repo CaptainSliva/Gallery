@@ -40,13 +40,11 @@ class SearchOnComment: AppCompatActivity() {
 
     var albumsPaths: MutableList<String> = mutableListOf()
     val numberOfColumns = 4
-    var isLoading = false
-    var imagesCount = 0
-    var pos = 0
     var strictSearch = true
     var textSearch = ""
-    var imageName = ""
     var findHash: MutableList<String> = mutableListOf()
+    val add = 4
+    var stop = 19
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -71,7 +69,18 @@ class SearchOnComment: AppCompatActivity() {
         var recyclerDataArrayList = ArrayList<RecyclerDataImages>()
         val layoutManager = GridLayoutManager(this, numberOfColumns)
         val adapter = GridRVAdapterImages(recyclerDataArrayList, this@SearchOnComment)
+        imageRV.layoutManager = layoutManager
+        imageRV.adapter = adapter
 
+
+        adapter.setOnLoadMoreListener(object: OnLoadMoreListener {
+            override fun onLoadMore() {
+                addItems(adapter, recyclerDataArrayList, stop+1, stop+add)
+                stop+=add
+                adapter.endLoading() //когда загрузка завершена
+
+            }
+        })
 
         imageRV.addOnItemTouchListener(
             RecyclerTouchListener(
@@ -79,7 +88,6 @@ class SearchOnComment: AppCompatActivity() {
                 imageRV,
                 object : RecyclerTouchListener.ClickListener {
                     override fun onClick(view: View, position: Int) {
-                        pos = position
 
                         val i = Intent(
                             applicationContext,
@@ -93,16 +101,13 @@ class SearchOnComment: AppCompatActivity() {
                     }
 
                     override fun onLongClick(view: View, position: Int) {
-                        pos = position
-
                         FunctionsApp().deleteDialog( this@SearchOnComment,
                             getString(R.string.title_image_delete), getString(R.string.messge_image_delete), images[position].toString(),
-                            albumsPaths[position], recyclerDataArrayList, position, adapter
-                        )
+                            albumsPaths[position], recyclerDataArrayList, position, adapter)
                         val i = Intent(
                             applicationContext,
                             AlbumImagesActivity::class.java)
-                        i.putExtra("albumPath", albumsPaths[pos])
+                        i.putExtra("albumPath", albumsPaths[position])
                         startActivity(i)
                         finish()
                     }
@@ -118,13 +123,20 @@ class SearchOnComment: AppCompatActivity() {
                 searchPhotoOnStory(s.toString())
                 textSearch = s.toString()
                 textCountResults.text = "Найдено: ${images.size}"
-                addItems(layoutManager, adapter, albumsPaths, recyclerDataArrayList, imageRV, 0, 0)
-            }
+
+                stop+=1
+                addItems(adapter, recyclerDataArrayList,0, stop)
+                stop+=1
+                addItems(adapter, recyclerDataArrayList, stop, stop+11)
+                stop+=11
+                //addItems(adapter,recyclerDataArrayList, 0, 0)
+           }
         })
 
         btnExit.setOnClickListener {
             val i = Intent(applicationContext, MainActivity::class.java)
             startActivity(i)
+            finish()
         }
 
         btnRegx.setOnClickListener {
@@ -152,42 +164,72 @@ class SearchOnComment: AppCompatActivity() {
 
             searchPhotoOnStory(textSearch)
             textCountResults.text = "Найдено: ${images.size}"
-            addItems(layoutManager, adapter, albumsPaths, recyclerDataArrayList, imageRV, 0, 0)
 
+
+
+            addItems(adapter, recyclerDataArrayList, 0, 0)
 
         }
-        adapter.notifyDataSetChanged()
     }
 
 
-    fun addItems(layoutManager: GridLayoutManager, adapter: GridRVAdapterImages, paths: MutableList<String>, recyclerDataArrayList: ArrayList<RecyclerDataImages>, imageRV: RecyclerView, start: Int, stop: Int) {
-
+    fun addItems(adapter: GridRVAdapterImages, recyclerDataArrayList: ArrayList<RecyclerDataImages>, start: Int, stop: Int) {
+        var stop = stop
 
 //                Toast.makeText(applicationContext, "images ${images.size}", Toast.LENGTH_SHORT).show()
         if (images.size > 4) Toast.makeText(applicationContext, "Найдено ${images.size} изображений. Пожалйуста, подождите.", Toast.LENGTH_LONG).show()
-        for (i in 0..images.size - 1) {
+        val imagesCount = images.size
+
+        if (imagesCount < stop) {
+            stop = imagesCount-1
+            adapter.setNoMore(true) //если подгружать больше нечего
+        }
+
+        if (stop == 0 && recyclerDataArrayList.isEmpty()) {
             try {
                 contentResolver.takePersistableUriPermission(
-                    images[i],
+                    images[0],
                     (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                 )
-                val bmp = FunctionsImages().compressBitmap(
+            }
+            catch (e: Exception) {
+                print("exept","EXEPTIOOOON")
+                return}
+
+            recyclerDataArrayList.add(RecyclerDataImages(FunctionsImages().compressBitmap(
+                MediaStore.Images.Media.getBitmap(
+                    this@SearchOnComment.contentResolver,
+                    images[0]
+                ), 500
+            )))
+            adapter.notifyItemInserted(0)
+        }
+
+
+        for (i in start..stop) {
+            if (recyclerDataArrayList.size < imagesCount) {
+                try {
+                    contentResolver.takePersistableUriPermission(
+                        images[i],
+                        (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    )
+
+                }
+                catch (e: Exception) {
+                    return
+                }
+                recyclerDataArrayList.add(RecyclerDataImages(FunctionsImages().compressBitmap(
                     MediaStore.Images.Media.getBitmap(
                         this@SearchOnComment.contentResolver,
                         images[i]
                     ), 500
-                )
-                recyclerDataArrayList.add(RecyclerDataImages(bmp))
-                imageRV.layoutManager = layoutManager
-                imageRV.adapter = adapter
-            } catch (e: Exception) {
-//                Toast.makeText(this@SearchOnComment, e.toString(), Toast.LENGTH_LONG).show()
+                )))
             }
         }
+        adapter.notifyItemRangeChanged(start, stop)
 
-        Log.d("PrintLog", "findHash: $findHash\nimages: $images")
 
-        isLoading = false
+        Log.d("PrintLog", "findHash: $findHash\nimages: $images\nalbums: $albumsPaths")
     }
 
 
@@ -219,12 +261,14 @@ class SearchOnComment: AppCompatActivity() {
             }
             albumsPaths = FunctionsFiles().findImageAlbumOnHash(applicationContext, findHash)
             images = FunctionsFiles().findImagesOnHash(applicationContext, findHash)
+
         }
     }
 
 
     fun clearAll(recyclerDataArrayList: ArrayList<RecyclerDataImages>, adapter: GridRVAdapterImages)
     {
+        stop = 19
         findHash.clear()
         images.clear()
         recyclerDataArrayList.clear()
