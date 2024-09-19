@@ -6,6 +6,6 @@
 
 ![Галерея с комментариями создание комментария](https://github.com/user-attachments/assets/03b5c9b6-fe5f-4544-915e-e6d8d53d3814)
 
-![Галерея с комментариями как выглядит комментарий](https://github.com/user-attachments/assets/a79a7838-a0ff-43fa-ab10-fff48283191d)
+![Галерея с комментариями как выглядит комментарий](https://github.com/user-attachments/assets/fcb31c1d-505b-4632-8e5e-786a26ff93b8)
 
 ![Галерея с комментариями поиск по комментарию](https://github.com/user-attachments/assets/c67f565a-5e52-4233-9a0c-dabf3aa749e3)
