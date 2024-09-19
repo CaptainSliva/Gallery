@@ -219,7 +219,7 @@ class AlbumImagesActivity: Activity() {
                 }
             }
             adapter.notifyItemRangeChanged(start, stop)
-            Toast.makeText(applicationContext, "images ${images.size}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(applicationContext, "images ${images.size}", Toast.LENGTH_SHORT).show()
         }
     }
 
